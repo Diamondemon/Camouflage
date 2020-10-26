@@ -17,6 +17,51 @@ chdir(path.dirname(__file__))
 import gpu
 import cpu
 
+
+### Accueil
+
+class HomeFrame(Frame):
+    
+    def __init__(self,master=None,**kwargs):
+        Frame.__init__(self,master,kwargs)
+
+        self.wm_attributes("-topmost", True)
+        self.title("Accueil Images")
+        self.configure(bg="#B6B0AD")
+        
+        
+        self.Do_Question = Label(self,text="Que voulez-vous faire?")
+        self.Do_Hide = Button(self,text="Cacher une image",command=master.Hide)
+        self.Do_Detect = Button(self,text="Trouver une image",command=master.Find)
+        self.Do_Text = Button(self,text="Cacher du texte",command=master.Hide_Text)
+        self.Do_Text_Get= Button(self,text="Récupérer un texte caché",command=master.Find_Text)
+        self.Do_Gray = Button(self,text="Griser une image",command=master.Gray_Img)
+        self.Do_Border = Button(self,text="Tracer les contours d'une image",command=master.Border_Img)
+        self.Do_Blur = Button(self,text="Flouter une image",command=master.Blur_Img)
+        self.Do_Pixel = Button(self,text="Pixelliser une image",command=master.Pxl_Img)
+        self.Do_ThermoSimu = Button(self,text="Faire une simulation thermique",command=master.Simulate_Therm)
+        self.Do_SuperThermo = Button(self,text="Faire une simulation thermique 2.0",command=master.Super_Therm)
+        self.Do_SuperThermo = Button(self,text="Résoudre un système linéaire",command=master.Gauss_Matrix)
+        self.Do_Zero = Button(self,text="Trouver le zéro d'une fonction",command=master.Zero_Func)
+        self.Do_Deriv = Button(self,text="Approximer une fonction",command=master.Deriv_Func)
+        
+        self.Do_Question.grid(row=0,column=0)
+        self.Do_Hide.grid(row=1,column=0)
+        self.Do_Detect.grid(row=2,column=0)
+        self.Do_Text.grid(row=3,column=0)
+        self.Do_Text_Get.grid(row=4,column=0)
+        self.Do_Gray.grid(row=5,column=0)
+        self.Do_Border.grid(row=0,column=1)
+        self.Do_Blur.grid(row=1,column=1)
+        self.Do_Pixel.grid(row=1,column=2)
+        self.Do_ThermoSimu.grid(row=2,column=1)
+        self.Do_SuperThermo.grid(row=3,column=1)
+        self.Do_SuperThermo.grid(row=4,column=1)
+        self.Do_Zero.grid(row=5,column=1)
+        self.Do_Deriv.grid(row=2,column=2)
+
+### Images
+
 class ImgFrame(Frame):
     """Basic Parent Frame widget for all Frame widgets that manipulate images. Useless on its own."""
     
