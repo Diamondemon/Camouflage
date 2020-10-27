@@ -25,8 +25,7 @@ class HomeFrame(Frame):
     def __init__(self,master=None,**kwargs):
         Frame.__init__(self,master,kwargs)
 
-        self.wm_attributes("-topmost", True)
-        self.title("Accueil Images")
+        
         self.configure(bg="#B6B0AD")
         
         
@@ -39,9 +38,10 @@ class HomeFrame(Frame):
         self.Do_Border = Button(self,text="Tracer les contours d'une image",command=master.Border_Img)
         self.Do_Blur = Button(self,text="Flouter une image",command=master.Blur_Img)
         self.Do_Pixel = Button(self,text="Pixelliser une image",command=master.Pxl_Img)
+        self.Do_Invert = Button(self,text="Faire le négatif d'une image",command=master.Neg_Img)
         self.Do_ThermoSimu = Button(self,text="Faire une simulation thermique",command=master.Simulate_Therm)
         self.Do_SuperThermo = Button(self,text="Faire une simulation thermique 2.0",command=master.Super_Therm)
-        self.Do_SuperThermo = Button(self,text="Résoudre un système linéaire",command=master.Gauss_Matrix)
+        self.Do_SolveSys = Button(self,text="Résoudre un système linéaire",command=master.Gauss_Matrix)
         self.Do_Zero = Button(self,text="Trouver le zéro d'une fonction",command=master.Zero_Func)
         self.Do_Deriv = Button(self,text="Approximer une fonction",command=master.Deriv_Func)
         
@@ -56,7 +56,7 @@ class HomeFrame(Frame):
         self.Do_Pixel.grid(row=1,column=2)
         self.Do_ThermoSimu.grid(row=2,column=1)
         self.Do_SuperThermo.grid(row=3,column=1)
-        self.Do_SuperThermo.grid(row=4,column=1)
+        self.Do_SolveSys.grid(row=4,column=1)
         self.Do_Zero.grid(row=5,column=1)
         self.Do_Deriv.grid(row=2,column=2)
 
@@ -656,7 +656,7 @@ class ImgPixFrame(ImgFrame):
         
         self.Rate_xChoice.grid(row=0,column=1)
         self.Rate_yChoice.grid(row=1,column=1)
-        self.Pixel_Choice .grid(row=0,column=2)
+        self.Pixel_Choice .grid(row=0,column=2,rowspan=2)
         self.Fuse_Display.grid(row=2,column=1,columnspan=2)
         
         
@@ -710,11 +710,68 @@ class ImgPixFrame(ImgFrame):
         
 ## Faire le négatif
 
-class ImgNegframe(ImgFrame):
+class ImgNegFrame(ImgFrame):
     
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
+        
+        self.fused_array=None
+        self.displayed_fused=None
+        self.negref=IntVar()
+        self.negref.set(255)
+        self.Ref_Choice=Entry(self,textvariable=self.negref)
+        self.Fused_Display=Canvas(self,height=360,width=360,bg="black")
+        self.Fused_Register = Button(self,text="Sauvegarder",command=self.Register)
+        self.Invert_Choice=Button(self,text="Inverser",command=self.Invert)
+        
+        self.Fused_Display.grid(row=2,column=1,columnspan=2)
+        self.Ref_Choice.grid(row=0,column=1)
+        self.Invert_Choice.grid(row=0,column=2,rowspan=2)
+    
+    def Invert(self,event=None):
+        print("OH")
+        if isinstance(self.mask_array,np.ndarray):
+            print("oups")
+            if self.mask_array.max()<=self.negref.get():
+                print("merde")
+                self.fused_array=gpu.invert(self.mask_array,self.negref.get())
+                print("plouf")
+                pilImage = PIL.Image.fromarray(self.fused_array)
+        
+                height_ref=pilImage.height
+                width_ref=pilImage.width
+        
+                if height_ref>360 or width_ref>360:
+                    if height_ref>width_ref:
+                        scale_ratio = 360/height_ref
+                        new_height = 360
+                        new_width = int(scale_ratio*width_ref)
+                    else:
+                        scale_ratio = 360/width_ref
+                        new_height = int(scale_ratio*height_ref)
+                        new_width = 360
+                    pilImage=pilImage.resize((new_width,new_height))
+        
+                self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
+                self.Fused_Display.create_image(182,182,image=self.displayed_fused)
+                self.Fused_Register.grid(row=3,column=1,columnspan=2)
+    
+    
+    def Register(self,event=None):
+    
+        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg"),("Images PNG",".png"),("Icones",".ico")],defaultextension=[".bmp",".jpg",".png"],initialfile=["Thumbnail"])
+        if filename!="":
+            imsave(filename,self.fused_array)
+            
+    def grid_forget(self,event=None):
+        ImgFrame.grid_forget(self)
+        self.displayed_fused=None
 
+        self.fused_array=None
+        
+        
+        self.Fused_Display.delete("all")
+        self.Fused_Register.grid_forget()
 
 
 ## Rogner une image

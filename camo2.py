@@ -8,176 +8,194 @@ import classes
 
 #------------------------------------------ Tkinter Functions ------------------------------------------
 class CamoWindow(Tk):
-    pass
+    
+    def __init__(self):
+        Tk.__init__(self)
+        self.title("Manipulation d'images")
+        icontkinter = PIL.ImageTk.PhotoImage(file='spy.ico')
+        self.iconphoto(True,icontkinter)
+        
+        self.HF=classes.HomeFrame(self)
+        self.IMF=classes.ImgFFrame(self)
+        self.IMH=classes.ImgHFrame(self)
+        self.IMHT=classes.ImgTFrame(self)
+        self.IMFT=classes.ImgGTFrame(self)
+        self.IMG=classes.ImgGFrame(self)
+        self.IMBo=classes.ImgBoFrame(self)
+        self.IMBl=classes.ImgBlFrame(self)
+        self.IMP=classes.ImgPixFrame(self)
+        self.IMN=classes.ImgNegFrame(self)
+        self.ThSim=classes.SimuTherm(self)
+        self.ThSup=classes.SuperThSim(self)
+        self.GF=classes.GaussFrame(self)
+        self.ZF=classes.ZeroFrame(self)
+        self.DF=classes.DerivFrame(self)
+        
+        self.menubar = Menu(self)
+        self.config(menu=self.menubar)
+        self.imgmenu=Menu(self.menubar)
+        self.imgmenu.add_command(label="Fusionner des images",command=self.Hide)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Trouver une image cachée",command=self.Find)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Cacher du Texte Dans une image",command=self.Hide_Text)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Trouver du Texte Dans une image",command=self.Find_Text)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Griser une image",command=self.Gray_Img)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Contouriser une image",command=self.Border_Img)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Flouter une image",command=self.Blur_Img)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Pixelliser",command=self.Pxl_Img)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Faire le négatif",command=self.Neg_Img)
+        # self.imgmenu.add_separator()
+        # self.imgmenu.add_command(label="Rogner une image",command=self.Crop_Img)
+        
+        self.jajamenu=Menu(self.menubar)
+        self.jajamenu.add_command(label="Simuler la chaleur",command=self.Simulate_Therm)
+        self.jajamenu.add_separator()
+        self.jajamenu.add_command(label="Thermo 2.0",command=self.Super_Therm)
+        
+        self.mathsmenu=Menu(self.menubar)
+        self.mathsmenu.add_command(label="Gauss",command=self.Gauss_Matrix)
+        self.mathsmenu.add_separator()
+        self.mathsmenu.add_command(label="Zéro de fonction",command=self.Zero_Func)
+        self.mathsmenu.add_separator()
+        self.mathsmenu.add_command(label="Approximation de fonction",command=self.Deriv_Func)
+        
+        self.menubar.add_cascade(label="Jeux d'images",menu=self.imgmenu)
+        self.menubar.add_cascade(label="IPT Jaja",menu=self.jajamenu)
+        self.menubar.add_cascade(label="Mathématiques",menu=self.mathsmenu)
+        
+        self.HF.grid(row=0,column=0)
+        
+        
+        
     
 
 
-    def Hide(event=None):
+    def Hide(self,event=None):
         """ Sets the main window to merge images"""
-        for wid in window.grid_slaves():
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMH.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMH.grid(row=0,column=0)
+        
+        
     
     
-    def Find(event=None):
+    def Find(self,event=None):
         """ Sets the main window to separate images"""
-        for wid in window.grid_slaves():
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMF.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMF.grid(row=0,column=0)
+        
+        
     
     
-    def Hide_Text(event=None):
+    def Hide_Text(self,event=None):
         """ Sets the main window to hide text in image"""
-        for wid in window.grid_slaves():
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMHT.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMHT.grid(row=0,column=0)
+        
+        
     
     
-    def Find_Text(event=None):
+    def Find_Text(self,event=None):
         """ Sets the main window to find potential text in image"""
-        for wid in window.grid_slaves():
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMFT.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMFT.grid(row=0,column=0)
         
-    def Gray_Img(event=None):
         
-        for wid in window.grid_slaves():
+        
+    def Gray_Img(self,event=None):
+        
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMG.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMG.grid(row=0,column=0)
         
-    def Border_Img(event=None):
         
-        for wid in window.grid_slaves():
+        
+    def Border_Img(self,event=None):
+        
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMBo.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMBo.grid(row=0,column=0)
         
-    def Blur_Img(event=None):
         
-        for wid in window.grid_slaves():
+        
+    def Blur_Img(self,event=None):
+        
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMBl.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMBl.grid(row=0,column=0)
         
-    def Pxl_Img(event=None):
         
-        for wid in window.grid_slaves():
+        
+    def Pxl_Img(self,event=None):
+        
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        IMP.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMP.grid(row=0,column=0)
         
-    def Simulate_Therm(event=None):
+    def Neg_Img(self,event=None):
         
-        for wid in window.grid_slaves():
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        ThSim.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.IMN.grid(row=0,column=0)
         
-    def Super_Therm(event=None):
+    # def Crop_Img(self,event=None):
+    #     
+    #     for wid in self.grid_slaves():
+    #         wid.grid_forget()
+    #     self.IMC.grid(row=0,column=0)
         
-        for wid in window.grid_slaves():
+        
+    def Simulate_Therm(self,event=None):
+        
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        ThSup.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.ThSim.grid(row=0,column=0)
         
-    def Gauss_Matrix(event=None):
         
-        for wid in window.grid_slaves():
+        
+    def Super_Therm(self,event=None):
+        
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        GF.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.ThSup.grid(row=0,column=0)
+        
+        
+        
+    def Gauss_Matrix(self,event=None):
+        
+        for wid in self.grid_slaves():
+            wid.grid_forget()
+        self.GF.grid(row=0,column=0)
+        
+        
     
-    def Zero_Func(event=None):
-        for wid in window.grid_slaves():
+    def Zero_Func(self,event=None):
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        ZF.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.ZF.grid(row=0,column=0)
+        
+        
     
-    def Deriv_Func(event=None):
-        for wid in window.grid_slaves():
+    def Deriv_Func(self,event=None):
+        for wid in self.grid_slaves():
             wid.grid_forget()
-        DF.grid(row=0,column=0)
-        window.wm_deiconify()
-        accueil.destroy()
+        self.DF.grid(row=0,column=0)
+        
+        
         
 
 window=CamoWindow()
-# window.title("Manipulation d'images")
-# icontkinter = PIL.ImageTk.PhotoImage(file='spy.ico')
-# window.iconphoto(True,icontkinter)
-# window.wm_iconify()
-# 
-# menubar = Menu(window)
-# window.config(menu=menubar)
-# imgmenu=Menu(menubar)
-# imgmenu.add_command(label="Fusionner des images",command=Hide)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Trouver une image cachée",command=Find)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Cacher du Texte Dans une image",command=Hide_Text)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Trouver du Texte Dans une image",command=Find_Text)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Griser une image",command=Gray_Img)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Contouriser une image",command=Border_Img)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Flouter une image",command=Blur_Img)
-# imgmenu.add_separator()
-# imgmenu.add_command(label="Pixelliser",command=Pxl_Img)
-# 
-# jajamenu=Menu(menubar)
-# jajamenu.add_command(label="Simuler la chaleur",command=Simulate_Therm)
-# jajamenu.add_separator()
-# jajamenu.add_command(label="Thermo 2.0",command=Super_Therm)
-# 
-# mathsmenu=Menu(menubar)
-# mathsmenu.add_command(label="Gauss",command=Gauss_Matrix)
-# mathsmenu.add_separator()
-# mathsmenu.add_command(label="Zéro de fonction",command=Zero_Func)
-# mathsmenu.add_separator()
-# mathsmenu.add_command(label="Approximation de fonction",command=Deriv_Func)
-# 
-# menubar.add_cascade(label="Jeux d'images",menu=imgmenu)
-# menubar.add_cascade(label="IPT Jaja",menu=jajamenu)
-# menubar.add_cascade(label="Mathématiques",menu=mathsmenu)
-# 
-# 
-# 
-# IMF=classes.ImgFFrame(window)
-# IMH=classes.ImgHFrame(window)
-# IMHT=classes.ImgTFrame(window)
-# IMFT=classes.ImgGTFrame(window)
-# IMG=classes.ImgGFrame(window)
-# IMBo=classes.ImgBoFrame(window)
-# IMBl=classes.ImgBlFrame(window)
-# IMP=classes.ImgPixFrame(window)
-# ThSim=classes.SimuTherm(window)
-# ThSup=classes.SuperThSim(window)
-# GF=classes.GaussFrame(window)
-# ZF=classes.ZeroFrame(window)
-# DF=classes.DerivFrame(window)
-
-
-    
-accueil=HomePage()
+        
         
 
-# window.mainloop()
+window.mainloop()

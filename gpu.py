@@ -446,7 +446,8 @@ def pxlzg(img,xrate,yrate):
     
 
 @jit(nopython=True)
-def negatif(tab,ref):
+def invert(tab,ref):
+    """ A function to invert the colors of a picture """
     img=tab.copy()
     n,p=img.shape[:2]
     for i in range(n):
@@ -460,7 +461,7 @@ def negatif(tab,ref):
 
 @jit(nopython=True)
 def crop(img,h,w,startingPos,modifier):
-    """ crops image """
+    """ crops image, can be used to make it bigger with no color """
     n = img.shape[0]
     p = img.shape[1]
     q = img.shape[2]
