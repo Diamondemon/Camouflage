@@ -18,6 +18,9 @@ import gpu
 import cpu
 
 
+
+
+
 ### Accueil
 
 class HomeFrame(Frame):
@@ -69,18 +72,23 @@ class ImgFrame(Frame):
         Frame.__init__(self,master,options)
         self.displayed_img=None
         self.mask_array=None
-        self.Mask_Choice = Button(self,text="Choisir une image",command=self.Mask_Choose)
+        self.displayed_fused=None
+        self.fused_array=None
+        self.Mask_Choice = Button(self,text="Choisir une image",command=self.Mask_Chose)
+        self.Fused_Register = Button(self,text="Sauvegarder",command=self.Register)
         self.Mask_Choice.grid(row=0,column=0,rowspan=2)
         
-        self.Mask_Display = Canvas(self,width=360,height=360,bg="#888888")
-        self.Mask_Display.grid(row=2,column=0)
+        self.Mask_Display = Canvas(self,width=360,height=360,bg="#fff")
+        self.Fused_Display = Canvas(self,width=360,height=360,bg="#000")
+        self.draw_chess()
+        self.Mask_Display.grid(row=2,column=0,rowspan=5)
+        self.Fused_Display.grid(row=2,column=3,columnspan=3,rowspan=5)
         
-    def Mask_Choose(self,event=None):
-        filename=askopenfilename(title="Choisissez votre image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg"),("Images PNG",".png")],defaultextension=[".bmp",".jpg",".png"],initialdir=path.dirname(__file__))
-        
+    def Mask_Chose(self,event=None):
+        filename=askopenfilename(title="Choisissez votre image",filetypes=[("Toute image",(".bmp",".png",".jpg",".ico",".jpeg",".raw")),("Images Bitmap",".bmp"),("Images Jpeg",(".jpg",".jpeg")),("Images PNG",".png"),("Icônes",".ico"),("Images RAW",".raw")],defaultextension=[".bmp",".jpg",".png"],initialdir=path.dirname(__file__))
         
         if filename!="":
-            self.Mask_Display.delete("all")
+            self.Mask_Display.delete("mask")
             pilImage=PIL.Image.open(filename)
             
             mask_temp = np.asarray(pilImage)
@@ -103,13 +111,57 @@ class ImgFrame(Frame):
             
             self.displayed_img = PIL.ImageTk.PhotoImage(pilImage)
             
-            self.Mask_Display.create_image(182,182,image=self.displayed_img)
+            self.Mask_Display.create_image(182,182,image=self.displayed_img,tag="mask")
+            return True
+
+    def Fused_Draw(self,event=None):
+
+        self.Fused_Display.delete("fused")
+        pilImage = PIL.Image.fromarray(self.fused_array)
+
+        height_ref=pilImage.height
+        width_ref=pilImage.width
+
+        if height_ref>360 or width_ref>360:
+            if height_ref>width_ref:
+                scale_ratio = 360/height_ref
+                new_height = 360
+                new_width = int(scale_ratio*width_ref)
+            else:
+                scale_ratio = 360/width_ref
+                new_height = int(scale_ratio*height_ref)
+                new_width = 360
+            pilImage=pilImage.resize((new_width,new_height))
+
+        self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
+
+        self.Fused_Display.create_image(182,182,image=self.displayed_fused,tag="fused")
+    
+    def draw_chess(self):
+        """ Draws the background composition for the pictures """
+        for i in range(0,18):
+            for j in range(0,18):
+                if (i+j)%2==1:
+                    self.Mask_Display.create_rectangle(20*i+2,20*j+2,20*i+22,20*j+22,width=0,fill="#ccc")
+                    self.Fused_Display.create_rectangle(20*i+2,20*j+2,20*i+22,20*j+22,width=0,fill="#ccc")
+                    
+    
+    def Register(self,event=None):
+    
+        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Toute image",(".bmp",".png",".jpg",".ico",".jpeg",".raw")),("Images Bitmap",".bmp"),("Images Jpeg",(".jpg",".jpeg")),("Images PNG",".png"),("Icônes",".ico"),("Images RAW",".raw")],defaultextension=[".bmp",".jpg",".png"],initialfile=["Image"])
+        if filename!="":
+            imsave(filename,self.fused_array)
+    
     
     def grid_forget(self,event=None):
         Frame.grid_forget(self)
         self.mask_array=None
+        self.fused_array=None
         self.displayed_img=None
-        self.Mask_Display.delete("all")
+        self.displayed_fused=None
+        self.Mask_Display.delete("mask")
+        self.Fused_Display.delete("fused")
+        self.Fused_Register.grid_forget()
 
 ## Cacher une image
 class ImgHFrame(ImgFrame):
@@ -120,42 +172,42 @@ class ImgHFrame(ImgFrame):
         ImgFrame.__init__(self,master,kwargs)
 
         self.displayed_hidden=None
-        self.displayed_fused=None
-
         self.hidden_array=None
-        self.fused_array=None
-
+        
         self.hider=StringVar()
         self.hider.set("simple")
         
         self.Hidden_Display=Canvas(self,width=360,height=360,bg="white")
-        self.Hidden_Choice = Button(self,text="Choisir l'image à cacher",command=self.Hidden_Choose)
+        self.draw_chess_hidden()
+        self.Hidden_Choice = Button(self,text="Choisir l'image à cacher",command=self.Hidden_Chose)
         self.Hide_Normal=Radiobutton(self,variable=self.hider,text="Fusion simple",value="simple")
         self.Hide_Plus=Radiobutton(self,variable=self.hider,text="Fusion locale",value="plus")
         
-        self.Hidden_Display.grid(row=2,column=1,columnspan=2)
+        self.Hidden_Display.grid(row=2,column=1,columnspan=2,rowspan=5)
         self.Hidden_Choice.grid(row=0,column=1,rowspan=2)
         self.Hide_Normal.grid(row=0,column=2)
         self.Hide_Plus.grid(row=1,column=2)
         
         self.Fuse_Choice = Button(self,text="Fusionner",command=self.Fuse)
         
-        self.Fuse_Display = Canvas(self,width=360,height=360,bg="black")
         
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
         
-        self.Fuse_Choice.grid(row=0,column=3,rowspan=2)
-        self.Fuse_Display.grid(row=2,column=3)
-
         
-    def Hidden_Choose(self,event=None):
-
+        self.Fuse_Choice.grid(row=0,column=3,rowspan=2,columnspan=3)
     
+    
+    def draw_chess_hidden(self):
+        """ Draws the background composition for the pictures """
+        for i in range(0,18):
+            for j in range(0,18):
+                if (i+j)%2==0:
+                    self.Hidden_Display.create_rectangle(20*i+2,20*j+2,20*i+22,20*j+22,width=0,fill="#ccc")
+        
+    def Hidden_Chose(self,event=None):
+
         filename=askopenfilename(title="Choisissez votre image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],initialdir=path.dirname(__file__))
-    
-    
         if filename!="":
-            self.Hidden_Display.delete("all")
+            self.Hidden_Display.delete("hidden")
     
             pilImage=PIL.Image.open(filename)
             hidden_temp = np.asarray(pilImage)
@@ -177,7 +229,7 @@ class ImgHFrame(ImgFrame):
     
             self.displayed_hidden = PIL.ImageTk.PhotoImage(pilImage)
     
-            self.Hidden_Display.create_image(182,182,image=self.displayed_hidden)
+            self.Hidden_Display.create_image(182,182,image=self.displayed_hidden,tag="hidden")
 
 
     def Fuse(self,event=None):
@@ -190,46 +242,22 @@ class ImgHFrame(ImgFrame):
                 mask_temp = self.mask_array.copy()
                 hidden_temp = self.hidden_array.copy()
                 self.fused_array = gpu.add_im(mask_temp,hidden_temp,self.hider.get())
-                pilImage = PIL.Image.fromarray(self.fused_array)
-    
-                height_ref=pilImage.height
-                width_ref=pilImage.width
-    
-                if height_ref>360 or width_ref>360:
-                    if height_ref>width_ref:
-                        scale_ratio = 360/height_ref
-                        new_height = 360
-                        new_width = int(scale_ratio*width_ref)
-                    else:
-                        scale_ratio = 360/width_ref
-                        new_height = int(scale_ratio*height_ref)
-                        new_width = 360
-                    pilImage=pilImage.resize((new_width,new_height))
-    
-                self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-    
-                self.Fuse_Display.create_image(182,182,image=self.displayed_fused)
-                self.Fuse_Register.grid(row=3,column=3)
+                ImgFrame.Fused_Draw(self)
                 
-    def Register(self,event=None):
+                self.Fused_Register.grid(row=7,column=3,columnspan=3)
+                
     
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],defaultextension=[".bmp",".jpg"],initialfile=["ImageCachee"])
-        if filename!="":
-            imsave(filename,self.fused_array)
     
     def grid_forget(self,event=None):
         ImgFrame.grid_forget(self)
         self.displayed_hidden=None
-        self.displayed_fused=None
-
+        
         self.hidden_array=None
-        self.fused_array=None
+        
         self.hider.set("simple")
         
+        self.Hidden_Display.delete("hidden")
         
-        self.Fuse_Display.delete("all")
-        self.Hidden_Display.delete("all")
-        self.Fuse_Register.grid_forget()
         
 ## Trouver une image
 
@@ -238,10 +266,6 @@ class ImgFFrame(ImgFrame):
     
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
-
-        self.displayed_fused=None
-        
-        self.fused_array=None
         
         self.finder=StringVar()
         self.finder.set("simple")
@@ -250,15 +274,12 @@ class ImgFFrame(ImgFrame):
         
         self.Normal_Find = Radiobutton(self,variable=self.finder,text="Recherche simple",value="simple")
         self.Plus_Find = Radiobutton(self,variable=self.finder,text="Recherche précise",value="plus")
-        self.Hidden_Display=Canvas(self,width=360,height=360,bg="white")
         
-        self.Find_Choice.grid(row=0,column=1,rowspan=2)
+        self.Find_Choice.grid(row=0,column=3,rowspan=2)
         
-        self.Normal_Find.grid(row=0,column=2)
-        self.Plus_Find.grid(row=1,column=2)
-        self.Hidden_Display.grid(row=2,column=1,columnspan=2)
+        self.Normal_Find.grid(row=0,column=4,columnspan=2)
+        self.Plus_Find.grid(row=1,column=4,columnspan=2)
         
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
         
         
     def Recup_Hidden(self,event=None):
@@ -272,43 +293,16 @@ class ImgFFrame(ImgFrame):
             elif self.finder.get()=="plus":
                 self.fused_array = gpu.bpf_cplus(self.fused_array)
             
-            pilImage = PIL.Image.fromarray(self.fused_array)
-            
-            height_ref=pilImage.height
-            width_ref=pilImage.width
-            
-            if height_ref>360 or width_ref>360:
-                if height_ref>width_ref:
-                    scale_ratio = 360/height_ref
-                    new_height = 360
-                    new_width = int(scale_ratio*width_ref)
-                else:
-                    scale_ratio = 360/width_ref
-                    new_height = int(scale_ratio*height_ref)
-                    new_width = 360
-                pilImage=pilImage.resize((new_width,new_height))
-            
-            self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-            
-            self.Hidden_Display.create_image(182,182,image=self.displayed_fused)
-            self.Fuse_Register.grid(row=3,column=1,columnspan=2)
+            ImgFrame.Fused_Draw(self)
+            self.Fused_Register.grid(row=7,column=3,columnspan=3)
         
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],defaultextension=[".bmp",".jpg"],initialfile=["ImageTrouvee"])
-        if filename!="":
-            imsave(filename,self.fused_array)
             
     def grid_forget(self,event=None):
         ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
+        
         self.finder.set("simple")
         
         
-        self.Hidden_Display.delete("all")
-        self.Fuse_Register.grid_forget()
 
 
 ## Cacher du texte
@@ -318,18 +312,13 @@ class ImgTFrame(ImgFrame):
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
 
-        self.displayed_fused=None
-
-        self.fused_array=None
 
         self.Textbox = Text(self,width=40,height=20,wrap="word")
         self.Text_Choice=Button(self,text="Cacher le texte",command=self.Text_Choose)
-        self.Fuse_Display = Canvas(self,width=360,height=360,bg="black")
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
         
-        self.Textbox.grid(row=2,column=1,columnspan=2)
-        self.Text_Choice.grid(row=0,column=3,rowspan=2)
-        self.Fuse_Display.grid(row=2,column=3)
+        
+        self.Textbox.grid(row=2,column=1,columnspan=2,rowspan=5)
+        self.Text_Choice.grid(row=0,column=3,rowspan=2,columnspan=3)
         
         
     def Text_Choose(self,event=None):
@@ -341,42 +330,16 @@ class ImgTFrame(ImgFrame):
             if temp_array.shape[0]*temp_array.shape[1]*temp_array.shape[2]>=len(text):
                 self.fused_array=gpu.Txt_In_Image(temp_array,text)
             
-                pilImage = PIL.Image.fromarray(self.fused_array)
-            
-                height_ref=pilImage.height
-                width_ref=pilImage.width
-            
-                if height_ref>360 or width_ref>360:
-                    if height_ref>width_ref:
-                        scale_ratio = 360/height_ref
-                        new_height = 360
-                        new_width = int(scale_ratio*width_ref)
-                    else:
-                        scale_ratio = 360/width_ref
-                        new_height = int(scale_ratio*height_ref)
-                        new_width = 360
-                    pilImage=pilImage.resize((new_width,new_height))
-            
-                self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-            
-                self.Fuse_Display.create_image(182,182,image=self.displayed_fused)
-                self.Fuse_Register.grid(row=3,column=3)
+                ImgFrame.Fused_Draw(self)
+                self.Fused_Register.grid(row=7,column=3,columnspan=3)
         
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],defaultextension=[".bmp",".jpg"],initialfile=["TexteCache"])
-        if filename!="":
-            imsave(filename,self.fused_array)
     
     def grid_forget(self,event=None):
         ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
         
         self.Textbox.delete(1.0,"end")
-        self.Fuse_Display.delete("all")
-        self.Fuse_Register.grid_forget()
+        
+        
             
             
 ## Trouver du texte
@@ -386,7 +349,8 @@ class ImgGTFrame(ImgFrame):
     
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
-
+        self.Fused_Display.grid_forget()
+        
         self.Textbox = Text(self,width=80,height=20,wrap="word")
         self.Text_Finder=Button(self,text="Trouver le texte caché",command=self.GeTxt)
         
@@ -419,18 +383,14 @@ class ImgGFrame(ImgFrame):
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
 
-        self.displayed_fused=None
-
-        self.fused_array=None
         
         self.Gray_Choice = Button(self,text="Griser l'image",command=self.Make_Gray)
-        self.Fuse_Display = Canvas(self,width=360,height=360,bg="black")
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
+        
 
-        self.Gray_Choice.grid(row=0,column=1)
-        self.Fuse_Display.grid(row=2,column=1,columnspan=2)
+        self.Gray_Choice.grid(row=0,column=3,rowspan=2,columnspan=2)
         self.Norm_Choice=Spinbox(self,values=(601,709))
-        self.Norm_Choice.grid(row=0,column=2)
+        Label(self,text="Norme de grisage").grid(row=0,column=5)
+        self.Norm_Choice.grid(row=1,column=5)
         
         
         
@@ -439,42 +399,11 @@ class ImgGFrame(ImgFrame):
         if isinstance(self.mask_array,np.ndarray):
             norm=int(self.Norm_Choice.get())
             self.fused_array=gpu.Rgb_2_Gray(self.mask_array,norm)
-            pilImage = PIL.Image.fromarray(self.fused_array)
+            ImgFrame.Fused_Draw(self)
+            self.Fused_Register.grid(row=7,column=3,columnspan=3)
     
-            height_ref=pilImage.height
-            width_ref=pilImage.width
-    
-            if height_ref>360 or width_ref>360:
-                if height_ref>width_ref:
-                    scale_ratio = 360/height_ref
-                    new_height = 360
-                    new_width = int(scale_ratio*width_ref)
-                else:
-                    scale_ratio = 360/width_ref
-                    new_height = int(scale_ratio*height_ref)
-                    new_width = 360
-                pilImage=pilImage.resize((new_width,new_height))
-    
-            self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-            self.Fuse_Display.create_image(182,182,image=self.displayed_fused)
-            self.Fuse_Register.grid(row=3,column=1,columnspan=2)
-            
-        
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],defaultextension=[".bmp",".jpg"],initialfile=["BlacknWhite"])
-        if filename!="":
-            imsave(filename,self.fused_array)
-            
-    def grid_forget(self,event=None):
-        ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
         
         
-        self.Fuse_Display.delete("all")
-        self.Fuse_Register.grid_forget()
         
 ## Trouver les contours
 
@@ -484,33 +413,26 @@ class ImgBoFrame(ImgFrame):
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
 
-        self.displayed_fused=None
-
-        self.fused_array=None
-        
         self.Border_Choice = Button(self,text="Contouriser l'image",command=self.Draw_Borders)
-        self.Fuse_Display = Canvas(self,width=360,height=360,bg="black")
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
+        
         self.Tolerance_Choice=Spinbox(self,from_=0,to=255)
         
 
-        self.Border_Choice.grid(row=0,column=1)
-
-        self.Fuse_Display.grid(row=2,column=1,columnspan=2)
+        self.Border_Choice.grid(row=0,column=3,columnspan=2,rowspan=2)
         self.Norm_Choice=Spinbox(self,values=(601,709))
-        self.Tolerance_Choice.grid(row=1,column=2)
+        self.Tolerance_Choice.grid(row=1,column=5)
 
-    def Mask_Choose(self,event=None):
-        ImgFrame.Mask_Choose(self,event)
+    def Mask_Chose(self,event=None):
+        ImgFrame.Mask_Chose(self,event)
         if len(self.mask_array.shape)==3:
-            self.Norm_Choice.grid(row=0,column=2)
+            self.Norm_Choice.grid(row=0,column=5)
         else:
             self.Norm_Choice.grid_forget()
 
     def Draw_Borders(self,event=None):
         
         if isinstance(self.mask_array,np.ndarray):
-            
+            # todo: adapter pour png
             if len(self.mask_array.shape)==3:
                 norm=int(self.Norm_Choice.get())
                 temp_array=gpu.Rgb_2_Gray(self.mask_array,norm)
@@ -519,42 +441,13 @@ class ImgBoFrame(ImgFrame):
             
             seuil=int(self.Tolerance_Choice.get())
             self.fused_array=gpu.Shape_Detect(temp_array,seuil)
-            pilImage = PIL.Image.fromarray(self.fused_array)
-    
-            height_ref=pilImage.height
-            width_ref=pilImage.width
-    
-            if height_ref>360 or width_ref>360:
-                if height_ref>width_ref:
-                    scale_ratio = 360/height_ref
-                    new_height = 360
-                    new_width = int(scale_ratio*width_ref)
-                else:
-                    scale_ratio = 360/width_ref
-                    new_height = int(scale_ratio*height_ref)
-                    new_width = 360
-                pilImage=pilImage.resize((new_width,new_height))
-    
-            self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-            self.Fuse_Display.create_image(182,182,image=self.displayed_fused)
-            self.Fuse_Register.grid(row=3,column=1)
+            ImgFrame.Fused_Draw(self)
+            self.Fused_Register.grid(row=7,column=3,columnspan=3)
             
             
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],defaultextension=[".bmp",".jpg"],initialfile=["Borders"])
-        if filename!="":
-            imsave(filename,self.fused_array)
         
     def grid_forget(self,event=None):
         ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
-        
-        
-        self.Fuse_Display.delete("all")
-        self.Fuse_Register.grid_forget()
         self.Norm_Choice.grid_forget()
             
             
@@ -566,30 +459,24 @@ class ImgBlFrame(ImgFrame):
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
 
-        self.displayed_fused=None
-
-        self.fused_array=None
         
         self.Border_Choice = Button(self,text="Flouter l'image",command=self.Blur_Image)
-        self.Fuse_Display = Canvas(self,width=360,height=360,bg="black")
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
         
-        self.Border_Choice.grid(row=0,column=1)
-        self.Fuse_Display.grid(row=2,column=1,columnspan=2)
+        self.Border_Choice.grid(row=0,column=3,columnspan=2,rowspan=2)
         self.Norm_Choice=Spinbox(self,values=(601,709))
         
         
-    def Mask_Choose(self,event=None):
-        ImgFrame.Mask_Choose(self,event)
+    def Mask_Chose(self,event=None):
+        ImgFrame.Mask_Chose(self,event)
         if len(self.mask_array.shape)==3:
-            self.Norm_Choice.grid(row=0,column=2)
+            self.Norm_Choice.grid(row=0,column=5)
         else:
             self.Norm_Choice.grid_forget()
         
     def Blur_Image(self,event=None):
         
         if isinstance(self.mask_array,np.ndarray):
-            
+            # todo: adapter pour png
             if len(self.mask_array.shape)==3:
                 norm=int(self.Norm_Choice.get())
                 temp_array=gpu.Rgb_2_Gray(self.mask_array,norm)
@@ -597,42 +484,12 @@ class ImgBlFrame(ImgFrame):
                 temp_array=self.mask_array.copy()
             
             self.fused_array=gpu.Blur(temp_array)
-            pilImage = PIL.Image.fromarray(self.fused_array)
+            ImgFrame.Fused_Draw(self)
+            self.Fused_Register.grid(row=7,column=3,columnspan=3)
     
-            height_ref=pilImage.height
-            width_ref=pilImage.width
-    
-            if height_ref>360 or width_ref>360:
-                if height_ref>width_ref:
-                    scale_ratio = 360/height_ref
-                    new_height = 360
-                    new_width = int(scale_ratio*width_ref)
-                else:
-                    scale_ratio = 360/width_ref
-                    new_height = int(scale_ratio*height_ref)
-                    new_width = 360
-                pilImage=pilImage.resize((new_width,new_height))
-    
-            self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-            self.Fuse_Display.create_image(182,182,image=self.displayed_fused)
-            self.Fuse_Register.grid(row=3,column=1)
-    
-            
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],defaultextension=[".bmp",".jpg"],initialfile=["Flou"])
-        if filename!="":
-            imsave(filename,self.fused_array)
         
     def grid_forget(self,event=None):
         ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
-        
-        
-        self.Fuse_Display.delete("all")
-        self.Fuse_Register.grid_forget()
         self.Norm_Choice.grid_forget()
         
         
@@ -642,22 +499,21 @@ class ImgPixFrame(ImgFrame):
     
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
-        self.fused_array=None
-        self.displayed_fused=None
+        
+        
         self.pixel_xrate=IntVar()
         self.pixel_xrate.set(2)
         self.pixel_yrate=IntVar()
         self.pixel_yrate.set(2)
-        self.Fuse_Display=Canvas(self,height=360,width=360,bg="black")
-        self.Fuse_Register = Button(self,text="Sauvegarder",command=self.Register)
         self.Pixel_Choice=Button(self,text="Pixelliser",command=self.Pixellize)
         self.Rate_xChoice=Entry(self,textvariable=self.pixel_xrate,width=4)
         self.Rate_yChoice=Entry(self,textvariable=self.pixel_yrate,width=4)
         
-        self.Rate_xChoice.grid(row=0,column=1)
-        self.Rate_yChoice.grid(row=1,column=1)
-        self.Pixel_Choice .grid(row=0,column=2,rowspan=2)
-        self.Fuse_Display.grid(row=2,column=1,columnspan=2)
+        Label(self,text="Diviser la hauteur par ").grid(row=0,column=3)
+        Label(self,text="Diviser la largeur par ").grid(row=1,column=3)
+        self.Rate_xChoice.grid(row=1,column=4)
+        self.Rate_yChoice.grid(row=0,column=4)
+        self.Pixel_Choice .grid(row=0,column=5,rowspan=2)
         
         
     def Pixellize(self,event=None):
@@ -672,41 +528,10 @@ class ImgPixFrame(ImgFrame):
             else:
                 self.fused_array=gpu.pxlzg(temp_array,xrate,yrate)
 
-            pilImage = PIL.Image.fromarray(self.fused_array)
-    
-            height_ref=pilImage.height
-            width_ref=pilImage.width
-    
-            if height_ref>360 or width_ref>360:
-                if height_ref>width_ref:
-                    scale_ratio = 360/height_ref
-                    new_height = 360
-                    new_width = int(scale_ratio*width_ref)
-                else:
-                    scale_ratio = 360/width_ref
-                    new_height = int(scale_ratio*height_ref)
-                    new_width = 360
-                pilImage=pilImage.resize((new_width,new_height))
-    
-            self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-            self.Fuse_Display.create_image(182,182,image=self.displayed_fused)
-            self.Fuse_Register.grid(row=3,column=1,columnspan=2)
-    
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg"),("Images PNG",".png"),("Icones",".ico")],defaultextension=[".bmp",".jpg",".png"],initialfile=["Thumbnail"])
-        if filename!="":
-            imsave(filename,self.fused_array)
-            
-    def grid_forget(self,event=None):
-        ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
+            ImgFrame.Fused_Draw(self)
+            self.Fused_Register.grid(row=7,column=3,columnspan=3)
         
         
-        self.Fuse_Display.delete("all")
-        self.Fuse_Register.grid_forget()
         
 ## Faire le négatif
 
@@ -715,66 +540,73 @@ class ImgNegFrame(ImgFrame):
     def __init__(self,master=None,**kwargs):
         ImgFrame.__init__(self,master,kwargs)
         
-        self.fused_array=None
-        self.displayed_fused=None
+        
         self.negref=IntVar()
         self.negref.set(255)
         self.Ref_Choice=Entry(self,textvariable=self.negref)
-        self.Fused_Display=Canvas(self,height=360,width=360,bg="black")
-        self.Fused_Register = Button(self,text="Sauvegarder",command=self.Register)
         self.Invert_Choice=Button(self,text="Inverser",command=self.Invert)
         
-        self.Fused_Display.grid(row=2,column=1,columnspan=2)
-        self.Ref_Choice.grid(row=0,column=1)
-        self.Invert_Choice.grid(row=0,column=2,rowspan=2)
+        self.Ref_Choice.grid(row=0,column=3,rowspan=2)
+        self.Invert_Choice.grid(row=0,column=4,rowspan=2,columnspan=2)
     
     def Invert(self,event=None):
-        print("OH")
         if isinstance(self.mask_array,np.ndarray):
-            print("oups")
             if self.mask_array.max()<=self.negref.get():
-                print("merde")
                 self.fused_array=gpu.invert(self.mask_array,self.negref.get())
-                print("plouf")
-                pilImage = PIL.Image.fromarray(self.fused_array)
-        
-                height_ref=pilImage.height
-                width_ref=pilImage.width
-        
-                if height_ref>360 or width_ref>360:
-                    if height_ref>width_ref:
-                        scale_ratio = 360/height_ref
-                        new_height = 360
-                        new_width = int(scale_ratio*width_ref)
-                    else:
-                        scale_ratio = 360/width_ref
-                        new_height = int(scale_ratio*height_ref)
-                        new_width = 360
-                    pilImage=pilImage.resize((new_width,new_height))
-        
-                self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
-                self.Fused_Display.create_image(182,182,image=self.displayed_fused)
-                self.Fused_Register.grid(row=3,column=1,columnspan=2)
-    
-    
-    def Register(self,event=None):
-    
-        filename=asksaveasfilename(title="Enregistrer l'image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg"),("Images PNG",".png"),("Icones",".ico")],defaultextension=[".bmp",".jpg",".png"],initialfile=["Thumbnail"])
-        if filename!="":
-            imsave(filename,self.fused_array)
-            
-    def grid_forget(self,event=None):
-        ImgFrame.grid_forget(self)
-        self.displayed_fused=None
-
-        self.fused_array=None
+                ImgFrame.Fused_Draw(self)
+                self.Fused_Register.grid(row=7,column=3,columnspan=3)
         
         
-        self.Fused_Display.delete("all")
-        self.Fused_Register.grid_forget()
 
 
 ## Rogner une image
+
+class ImgCropFrame(ImgFrame):
+    
+    def __init__(self,master=None,**kwargs):
+        ImgFrame.__init__(self,master,kwargs)
+        
+        
+        self.newheight=IntVar()
+        self.newwidth=IntVar()
+        self.startpos=TabVar(IntVar(),IntVar())
+        self.modifier=TabVar(IntVar(),IntVar(),IntVar())
+        self.NewH_Choice=Entry(self,textvariable=self.newheight,width=5)
+        self.NewW_Choice=Entry(self,textvariable=self.newwidth,width=5)
+        self.Crop_Choice=Button(self,text="Rogner",command=self.Crop)
+        
+        self.NewH_Choice.grid(row=0,column=4)
+        self.NewW_Choice.grid(row=1,column=4)
+        self.Crop_Choice.grid(row=0,column=5,rowspan=2)
+        
+        Label(self,text="Nouvelle Hauteur ").grid(row=0,column=3)
+        Label(self,text="Nouvelle Largeur ").grid(row=1,column=3)
+        
+        Label(self,text="Depuis x=").grid(row=2,column=6)
+        Label(self,text="et y=").grid(row=2,column=7)
+        Entry(self,textvariable=self.startpos[1],width=4).grid(row=3, column=6)
+        Entry(self,textvariable=self.startpos[0],width=4).grid(row=3, column=7)
+        Label(self,text="Ajouter hauteur/largeur/transparence (1/0)").grid(row=4,column=6,columnspan=3)
+        Entry(self,textvariable=self.modifier[0],width=4).grid(row=5, column=6)
+        Entry(self,textvariable=self.modifier[1],width=4).grid(row=5, column=7)
+        Entry(self,textvariable=self.modifier[2],width=4).grid(row=5, column=8)
+    
+    def Crop(self,event=None):
+        if isinstance(self.mask_array,np.ndarray):
+            if (self.mask_array.shape[0]>=self.newheight.get()+self.startpos[0].get() and 
+                self.mask_array.shape[1]>=self.newwidth.get()+self.startpos[1].get() and self.modifier[0].get()>=0 and self.modifier[1].get()>=0 and self.modifier[2].get() in [0,1]):
+                self.fused_array=gpu.crop(self.mask_array,self.newheight.get(),self.newwidth.get(),self.startpos.get(),self.modifier.get())
+                ImgFrame.Fused_Draw(self)
+                self.Fused_Register.grid(row=7,column=3,columnspan=3)
+    
+    def Mask_Chose(self,event=None):
+        
+        if ImgFrame.Mask_Chose(self,event):
+            self.newheight.set(self.mask_array.shape[0])
+            self.newwidth.set(self.mask_array.shape[1])
+    
+        
+        
 
 
 ## Simulation Thermique
@@ -1486,3 +1318,30 @@ class ZeroFrame(Frame):
         self.sup.set(0.0)
         self.eps.set(0.01)
         
+        
+
+### Misc
+
+class TabVar(object):
+    
+    def __init__(self,*args):
+        
+        self.values=list(args)
+    
+    def __getitem__(self,key):
+        
+        return (self.values[key])
+        
+    
+    def get(self):
+        
+        outputlist=self.values.copy()
+        
+        for i in range(len(self.values)):
+            try:
+                outputlist[i]=outputlist[i].get()
+            
+            except:
+                pass
+                
+        return outputlist

@@ -279,7 +279,7 @@ def Shape_Detect(img,seuil=40):
             elif i==n-1:
                border = border + d*(int(gray[i-1,j-1])+int(gray[i,j-1])+int(gray[i,j+1])+int(gray[i-1,j+1])+int(gray[i-1,j]))
 
-            if border<=seuil:
+            if abs(border)<=seuil:
                 detected[i,j]=255
 
     return detected
@@ -461,9 +461,7 @@ def invert(tab,ref):
 
 @jit(nopython=True)
 def crop(img,h,w,startingPos,modifier):
-    """ crops image, can be used to make it bigger with no color """
-    n = img.shape[0]
-    p = img.shape[1]
+    """ crops image, can be used to make it bigger with no color. It is supposed that the new dimensions fit into the older ones"""
     q = img.shape[2]
     padx = modifier[0]//2
     pady = modifier[1]//2
@@ -471,10 +469,10 @@ def crop(img,h,w,startingPos,modifier):
     startx=startingPos[0]
     starty=startingPos[1]
     
-    if n<startx+h or p<starty+w:
-        return
+    new=np.zeros((h+2*padx,w+2*pady,q+newpix),dtype=np.uint8)
     
-    new=np.zeros((h+2*padx,w+2*pady,q+newpix))
+    if newpix==1:
+        new[padx:padx+h,pady:pady+w,3]=255+new[padx:padx+h,pady:pady+w,3]
     
     for i in range(0,h):
         for j in range(0,w):
