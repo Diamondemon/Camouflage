@@ -284,6 +284,93 @@ def Shape_Detect(img,seuil=40):
 
     return detected
 
+@jit(nopython=True)
+def fliplines(kernel):
+    newkernel=np.zeros(kernel.shape)
+    n=kernel.shape[0]
+    
+    for i in range(newkernel.shape[0]):
+        newkernel[i]=kernel[n-1-i]
+    
+    return newkernel
+    
+    
+@jit(nopython=True)
+def flipcols(kernel):
+    newkernel=np.zeros(kernel.shape)
+    n=kernel.shape[1]
+    
+    for j in range(newkernel.shape[1]):
+        newkernel[:,j]=kernel[:,n-1-j]
+    
+    return newkernel
+
+
+
+@jit(nopython=True)
+def Convolve2D(image,kernel,pad,strides):
+    
+    kernel=fliplines(flipcols(kernel))
+    
+    n,p=image.shape[:2]
+    l,m=kernel.shape[:2]
+    
+    nOutput=(n-l+2*pad)//strides+1
+    pOutput=(p-m+2*pad)//strides+1
+    output=np.zeros((nOutput,pOutput))
+    
+    padded_image=np.zeros((n+2*pad,p+2*pad))
+    padded_image[pad:pad+n,pad:pad+p]=image.copy()
+    
+    
+    for i in range(padded_image.shape[0]-l):
+        for j in range(padded_image.shape[1]-m):
+            
+            if i%strides==0 and j%strides==0:
+                output[i, j] = ((kernel * padded_image[i: i + l, j: j + m]).sum())
+    
+    return output
+    
+
+@jit(nopython=True)
+def Convolve2Dabs(image,kernel,pad,strides):
+    
+    kernel=fliplines(flipcols(kernel))
+    
+    n,p=image.shape[:2]
+    l,m=kernel.shape[:2]
+    
+    nOutput=(n-l+2*pad)//strides+1
+    pOutput=(p-m+2*pad)//strides+1
+    output=np.zeros((nOutput,pOutput))
+    
+    padded_image=np.zeros((n+2*pad,p+2*pad))
+    padded_image[pad:pad+n,pad:pad+p]=image.copy()
+    
+    
+    for i in range(padded_image.shape[0]-l):
+        for j in range(padded_image.shape[1]-m):
+            
+            if i%strides==0 and j%strides==0:
+                output[i, j] = abs((kernel * padded_image[i: i + l, j: j + m]).sum())
+    
+    return output
+    
+@jit(nopython=True)
+def Prewitt(image):
+    
+    Gradx=np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
+    Grady=np.array([[-1,-1,-1],[0,0,0],[1,1,1]])
+    
+    Gdex=Convolve2D(image,Gradx,1,1)
+    Gdey=Convolve2D(image,Grady,1,1)
+    
+    G=np.sqrt((Gdex**2)+(Gdey**2))
+    
+    return G
+    
+    
+    
 
 @jit(nopython=True)
 def Blur(img):

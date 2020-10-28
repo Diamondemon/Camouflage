@@ -85,7 +85,7 @@ class ImgFrame(Frame):
         self.Fused_Display.grid(row=2,column=3,columnspan=3,rowspan=5)
         
     def Mask_Chose(self,event=None):
-        filename=askopenfilename(title="Choisissez votre image",filetypes=[("Toute image",(".bmp",".png",".jpg",".ico",".jpeg",".raw")),("Images Bitmap",".bmp"),("Images Jpeg",(".jpg",".jpeg")),("Images PNG",".png"),("Icônes",".ico"),("Images RAW",".raw")],defaultextension=[".bmp",".jpg",".png"],initialdir=path.dirname(__file__))
+        filename=askopenfilename(title="Choisissez votre image",filetypes=[("Toute image",(".bmp",".png",".jpg",".ico",".jpeg",".raw")),("Images Bitmap",".bmp"),("Images Jpeg",(".jpg",".jpeg")),("Images PNG",".png"),("Icônes",".ico"),("Images RAW",".raw")],defaultextension=[".bmp",".jpg",".png"])
         
         if filename!="":
             self.Mask_Display.delete("mask")
@@ -205,7 +205,7 @@ class ImgHFrame(ImgFrame):
         
     def Hidden_Chose(self,event=None):
 
-        filename=askopenfilename(title="Choisissez votre image",filetypes=[("Images Bitmap",".bmp"),("Images Jpeg",".jpg")],initialdir=path.dirname(__file__))
+        filename=askopenfilename(title="Choisissez votre image",filetypes=[("Toute image",(".bmp",".png",".jpg",".ico",".jpeg",".raw")),("Images Bitmap",".bmp"),("Images Jpeg",(".jpg",".jpeg")),("Images PNG",".png"),("Icônes",".ico"),("Images RAW",".raw")],defaultextension=[".bmp",".jpg",".png"])
         if filename!="":
             self.Hidden_Display.delete("hidden")
     
@@ -237,14 +237,16 @@ class ImgHFrame(ImgFrame):
     
         if isinstance(self.mask_array,np.ndarray) and isinstance(self.hidden_array,np.ndarray):
     
-            if self.mask_array.shape[0] >= self.hidden_array.shape[0] or self.mask_array.shape[1] >= self.hidden_array.shape[1]:
-    
-                mask_temp = self.mask_array.copy()
-                hidden_temp = self.hidden_array.copy()
-                self.fused_array = gpu.add_im(mask_temp,hidden_temp,self.hider.get())
-                ImgFrame.Fused_Draw(self)
+            if self.mask_array.shape[0] >= self.hidden_array.shape[0] and self.mask_array.shape[1] >= self.hidden_array.shape[1]:
                 
-                self.Fused_Register.grid(row=7,column=3,columnspan=3)
+                if len(self.mask_array.shape)==len(self.hidden_array.shape):
+    
+                    mask_temp = self.mask_array.copy()
+                    hidden_temp = self.hidden_array.copy()
+                    self.fused_array = gpu.add_im(mask_temp,hidden_temp,self.hider.get())
+                    ImgFrame.Fused_Draw(self)
+                    
+                    self.Fused_Register.grid(row=7,column=3,columnspan=3)
                 
     
     
@@ -440,7 +442,11 @@ class ImgBoFrame(ImgFrame):
                 temp_array=self.mask_array.copy()
             
             seuil=int(self.Tolerance_Choice.get())
-            self.fused_array=gpu.Shape_Detect(temp_array,seuil)
+            # self.fused_array=gpu.Shape_Detect(temp_array,seuil)
+            
+            kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
+            # self.fused_array=gpu.Convolve2D(temp_array,kernel,1,1)
+            self.fused_array=gpu.Prewitt(temp_array)
             ImgFrame.Fused_Draw(self)
             self.Fused_Register.grid(row=7,column=3,columnspan=3)
             
