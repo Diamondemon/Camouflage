@@ -5,15 +5,16 @@ from functools import partial
 chdir(path.dirname(__file__))
 import classes
 
+# ------------------------------------------ Tkinter Functions ------------------------------------------
 
-#------------------------------------------ Tkinter Functions ------------------------------------------
+
 class CamoWindow(Tk):
     
     def __init__(self):
         Tk.__init__(self)
         self.title("Manipulation d'images")
         icontkinter = PIL.ImageTk.PhotoImage(file='spy.ico')
-        self.iconphoto(True,icontkinter)
+        self.iconphoto(True, icontkinter)
         
         self.HF=classes.HomeFrame(self)
         self.IMF=classes.ImgFFrame(self)
@@ -72,71 +73,49 @@ class CamoWindow(Tk):
         self.menubar.add_cascade(label="Mathématiques",menu=self.mathsmenu)
         
         self.HF.grid(row=0,column=0)
-        
-        
-        
-    
-
 
     def Hide(self,event=None):
         """ Sets the main window to merge images"""
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMH.grid(row=0,column=0)
-        
-        
-    
-    
+
     def Find(self,event=None):
         """ Sets the main window to separate images"""
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMF.grid(row=0,column=0)
-        
-        
-    
-    
+
     def Hide_Text(self,event=None):
         """ Sets the main window to hide text in image"""
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMHT.grid(row=0,column=0)
-        
-        
-    
-    
+
     def Find_Text(self,event=None):
         """ Sets the main window to find potential text in image"""
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMFT.grid(row=0,column=0)
-        
-        
-        
+
     def Gray_Img(self,event=None):
         
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMG.grid(row=0,column=0)
-        
-        
-        
+
     def Border_Img(self,event=None):
         
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMBo.grid(row=0,column=0)
-        
-        
-        
+
     def Blur_Img(self,event=None):
         
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMBl.grid(row=0,column=0)
-        
-        
-        
+
     def Pxl_Img(self,event=None):
         
         for wid in self.grid_slaves():
@@ -154,49 +133,36 @@ class CamoWindow(Tk):
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMC.grid(row=0,column=0)
-        
-        
+
     def Simulate_Therm(self,event=None):
         
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.ThSim.grid(row=0,column=0)
-        
-        
-        
+
     def Super_Therm(self,event=None):
         
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.ThSup.grid(row=0,column=0)
-        
-        
-        
+
     def Gauss_Matrix(self,event=None):
         
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.GF.grid(row=0,column=0)
-        
-        
-    
+
     def Zero_Func(self,event=None):
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.ZF.grid(row=0,column=0)
-        
-        
-    
+
     def Deriv_Func(self,event=None):
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.DF.grid(row=0,column=0)
-        
-        
-        
 
-window=CamoWindow()
-        
-        
+
+window = CamoWindow()
 
 window.mainloop()

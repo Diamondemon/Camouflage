@@ -50,6 +50,7 @@ def bpf_s(im_s):
 
 @jit(nopython=True)
 def bpf_c(im_c):
+    """ Function that puts low weight bits into high weight position """
     n=im_c.shape[0]
     p=im_c.shape[1]
 
@@ -260,7 +261,7 @@ def Shape_Detect(img,seuil=40):
         for j in range(p):
             border=0
             border=c*gray[i,j]
-            if i<n-1 and i>0 and j<p-1 and j>0:
+            if n-1 > i > 0 and p - 1 > j > 0:
                 border = border + d*(int(gray[i-1,j-1])+int(gray[i,j-1])+int(gray[i+1,j-1])+int(gray[i+1,j])+int(gray[i+1,j+1])+int(gray[i,j+1])+int(gray[i-1,j+1])+int(gray[i-1,j]))
             elif i==n-1 and j==p-1:
                 border = border + d*(int(gray[i-1,j-1])+int(gray[i,j-1])+int(gray[i-1,j]))
@@ -308,19 +309,19 @@ def flipcols(kernel):
 
 
 @jit(nopython=True)
-def Convolve2D(image,kernel,pad,strides):
+def Convolve2D(image,kernel,padh=0,padw=0,strides=1):
     
     kernel=fliplines(flipcols(kernel))
     
     n,p=image.shape[:2]
     l,m=kernel.shape[:2]
     
-    nOutput=(n-l+2*pad)//strides+1
-    pOutput=(p-m+2*pad)//strides+1
+    nOutput=(n-l+2*padh)//strides+1
+    pOutput=(p-m+2*padw)//strides+1
     output=np.zeros((nOutput,pOutput))
     
-    padded_image=np.zeros((n+2*pad,p+2*pad))
-    padded_image[pad:pad+n,pad:pad+p]=image.copy()
+    padded_image=np.zeros((n+2*padh,p+2*padw))
+    padded_image[padh:padh+n,padw:padw+p]=image.copy()
     
     
     for i in range(padded_image.shape[0]-l):
@@ -333,19 +334,19 @@ def Convolve2D(image,kernel,pad,strides):
     
 
 @jit(nopython=True)
-def Convolve2Dabs(image,kernel,pad,strides):
+def Convolve2Dabs(image,kernel,padh=0,padw=0,strides=1):
     
     kernel=fliplines(flipcols(kernel))
     
     n,p=image.shape[:2]
     l,m=kernel.shape[:2]
     
-    nOutput=(n-l+2*pad)//strides+1
-    pOutput=(p-m+2*pad)//strides+1
+    nOutput=(n-l+2*padh)//strides+1
+    pOutput=(p-m+2*padw)//strides+1
     output=np.zeros((nOutput,pOutput))
     
-    padded_image=np.zeros((n+2*pad,p+2*pad))
-    padded_image[pad:pad+n,pad:pad+p]=image.copy()
+    padded_image=np.zeros((n+2*padh,p+2*padw))
+    padded_image[padh:padh+n,padw:padw+p]=image.copy()
     
     
     for i in range(padded_image.shape[0]-l):
@@ -364,6 +365,36 @@ def Prewitt(image):
     
     Gdex=Convolve2D(image,Gradx,1,1)
     Gdey=Convolve2D(image,Grady,1,1)
+    
+    G=np.sqrt((Gdex**2)+(Gdey**2))
+    
+    return G
+    
+@jit(nopython=True)
+def Sobel(image,goabs=0):
+    
+    Gradx=np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
+    Grady=np.array([[-1,-2,-1],[0,0,0],[1,2,1]])
+    
+    Gdex=Convolve2Dabs(image,Gradx,1,1)
+    Gdey=Convolve2Dabs(image,Grady,1,1)
+    
+    if goabs==1:
+        G=Gdex+Gdey
+    else:
+        G=np.sqrt((Gdex**2)+(Gdey**2))
+    
+    return G
+    
+@jit(nopython=True)
+def Canny(image):
+    
+    image=Blur_Gauss(image,5)
+    Gradx=np.array([[1,0,-1]])
+    Grady=np.array([[1],[0],[-1]])
+    
+    Gdex=Convolve2Dabs(image,Gradx,0,1)
+    Gdey=Convolve2Dabs(image,Grady,1)
     
     G=np.sqrt((Gdex**2)+(Gdey**2))
     
@@ -410,6 +441,17 @@ def Blur(img):
             detected[i,j]=border
 
     return detected
+    
+@jit(nopython=True)
+def Blur_Gauss(img,size):
+    
+    if size==3:
+        kernel=(1/16)*np.array([[1,2,1],[2,4,2],[1,2,1]])
+    elif size==5:
+        kernel=(1/159)*np.array([[2,4,5,4,2],[4,9,12,9,4],[5,12,15,12,5],[4,9,12,9,4],[2,4,5,4,2]])
+    
+    blurred=Convolve2D(img,kernel,size//2,size//2)
+    return blurred
 
 
 @jit(nopython=True)
