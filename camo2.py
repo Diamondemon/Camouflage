@@ -24,6 +24,7 @@ class CamoWindow(Tk):
         self.IMG=classes.ImgGFrame(self)
         self.IMBo=classes.ImgBoFrame(self)
         self.IMBl=classes.ImgBlFrame(self)
+        self.IMSh=classes.ImgSharpFrame(self)
         self.IMP=classes.ImgPixFrame(self)
         self.IMN=classes.ImgNegFrame(self)
         self.IMC=classes.ImgCropFrame(self)
@@ -49,6 +50,8 @@ class CamoWindow(Tk):
         self.imgmenu.add_command(label="Contouriser une image",command=self.Border_Img)
         self.imgmenu.add_separator()
         self.imgmenu.add_command(label="Flouter une image",command=self.Blur_Img)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Améliorer une image (broken)",command=self.Sharpen_Img)
         self.imgmenu.add_separator()
         self.imgmenu.add_command(label="Pixelliser",command=self.Pxl_Img)
         self.imgmenu.add_separator()
@@ -115,6 +118,13 @@ class CamoWindow(Tk):
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMBl.grid(row=0,column=0)
+
+    def Sharpen_Img(self, event=None):
+
+        for wid in self.grid_slaves():
+            wid.grid_forget()
+        self.IMSh.grid(row=0,column=0)
+
 
     def Pxl_Img(self,event=None):
         

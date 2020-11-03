@@ -220,6 +220,7 @@ def ordchar(order):
 
 @jit(nopython=True)
 def char(order):
+
     asciitable=['\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\t', '\n', '\x0b', '\x0c', '\r', '\x0e', '\x0f', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', '\x7f', '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87', '\x88', '\x89', '\x8a', '\x8b', '\x8c', '\x8d', '\x8e', '\x8f', '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97', '\x98', '\x99', '\x9a', '\x9b', '\x9c', '\x9d', '\x9e', '\x9f', '\xa0', '¡', '¢', '£', '¤', '¥', '¦', '§', '¨', '©', 'ª', '«', '¬', '\xad', '®', '¯', '°', '±', '²', '³', '´', 'µ', '¶', '·', '¸', '¹', 'º', '»', '¼', '½', '¾', '¿', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', '×', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Þ', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', '÷', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'þ', 'ÿ']
 
     corres=[]
@@ -230,6 +231,7 @@ def char(order):
 
 @jit(nopython=True)
 def Rgb_2_Gray(img,norm=601):
+    """ Turns a colored image into a greyscale image """
     n=img.shape[0]
     p=img.shape[1]
 
@@ -247,6 +249,7 @@ def Rgb_2_Gray(img,norm=601):
 
 @jit(nopython=True)
 def Shape_Detect(img,seuil=40):
+    """ Does a shape detection using a basical filter, with a treshold post-treatment """
     c=8
     d=-1
 
@@ -287,6 +290,7 @@ def Shape_Detect(img,seuil=40):
 
 @jit(nopython=True)
 def fliplines(kernel):
+    """ flips the lines of a kernel """
     newkernel=np.zeros(kernel.shape)
     n=kernel.shape[0]
     
@@ -298,6 +302,7 @@ def fliplines(kernel):
     
 @jit(nopython=True)
 def flipcols(kernel):
+    """ flips the columns of a kernel """
     newkernel=np.zeros(kernel.shape)
     n=kernel.shape[1]
     
@@ -310,6 +315,7 @@ def flipcols(kernel):
 
 @jit(nopython=True)
 def Convolve2D(image,kernel,padh=0,padw=0,strides=1):
+    """ Returns the value of the convolution between a greyscale image and a kernel """
     
     kernel=fliplines(flipcols(kernel))
     
@@ -335,6 +341,7 @@ def Convolve2D(image,kernel,padh=0,padw=0,strides=1):
 
 @jit(nopython=True)
 def Convolve2Dabs(image,kernel,padh=0,padw=0,strides=1):
+    """ Returns the absolute value of the convolution between a greyscale image and a kernel """
     
     kernel=fliplines(flipcols(kernel))
     
@@ -359,6 +366,7 @@ def Convolve2Dabs(image,kernel,padh=0,padw=0,strides=1):
     
 @jit(nopython=True)
 def Prewitt(image):
+    """ Shape detection using the algorithm of Prewitt """
     
     Gradx=np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
     Grady=np.array([[-1,-1,-1],[0,0,0],[1,1,1]])
@@ -372,6 +380,7 @@ def Prewitt(image):
     
 @jit(nopython=True)
 def Sobel(image,goabs=0):
+    """ Shape detection using the algorithm of Sobel """
     
     Gradx=np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
     Grady=np.array([[-1,-2,-1],[0,0,0],[1,2,1]])
@@ -388,6 +397,7 @@ def Sobel(image,goabs=0):
     
 @jit(nopython=True)
 def Canny(image):
+    """ Shape detection using the algorithm of Canny, yet without Treshold Post-Treatment """
     
     image=Blur_Gauss(image,5)
     Gradx=np.array([[1,0,-1]])
@@ -405,6 +415,7 @@ def Canny(image):
 
 @jit(nopython=True)
 def Blur(img):
+    """ Applies a Mean Mask to a greyscale image """
     c=1
     d=1
 
@@ -441,10 +452,20 @@ def Blur(img):
             detected[i,j]=border
 
     return detected
+
+@jit(nopython=True)
+def Blur3D(img):
+    """ Applies a Mean Mask to a corlored image """
+    blurred=img.copy()
+    for k in range(3):
+        blurred[:,:,k]=Blur(img[:,:,k])
+
+    return blurred
+
     
 @jit(nopython=True)
 def Blur_Gauss(img,size):
-    
+    """ Applies a Gauss Mask to a greyscale image """
     if size==3:
         kernel=(1/16)*np.array([[1,2,1],[2,4,2],[1,2,1]])
     elif size==5:
@@ -452,6 +473,60 @@ def Blur_Gauss(img,size):
     
     blurred=Convolve2D(img,kernel,size//2,size//2)
     return blurred
+
+
+@jit(nopython=True)
+def Blur_Gauss3D(img,size):
+    """ Applies a Gauss Mask to a colored image """
+    blurred = img.copy()
+    for k in range(3):
+        blurred[:, :, k] = Blur_Gauss(img[:, :, k],size)
+
+    return blurred
+
+@jit(nopython=True)
+def Blur_Mask(img):
+    """ Applies a Blurring Mask to a greyscale image """
+    kernel = (-1/256)*np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,-476,24,6],[4,16,24,16,4],[1,4,6,4,1]])
+
+    blurred = Convolve2D(img,kernel,2,2)
+    return blurred
+
+@jit(nopython=True)
+def Blur_Mask3D(img):
+    """ Applies a Blurring Mask to a colored image """
+    blurred = img.copy()
+
+    for k in range(3):
+        blurred[:,:,k] = Blur_Mask(img[:,:,k])
+
+    return blurred
+
+@jit(nopython=True)
+def Sharpen(img):
+    """
+    :param img: greyscale image (2D numpy array)
+    :return: img convolved with a sharpening kernel
+    """
+
+    kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]])
+
+    sharpened = Convolve2Dabs(img,kernel,1,1)
+
+    return sharpened
+
+@jit(nopython=True)
+def Sharpen3D(img):
+    """
+    :param img: colored image (3D numpy array)
+    :return: img with sharpened details
+    """
+
+    sharpened = img.copy()
+    for k in range(3):
+        sharpened[:,:,k] = Sharpen(img[:,:,k])
+
+    return sharpened
 
 
 @jit(nopython=True)

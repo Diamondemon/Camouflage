@@ -561,6 +561,38 @@ class ImgBlFrame(ImgFrame):
         ImgFrame.grid_forget(self)
         self.Norm_Choice.grid_forget()
 
+# Améliorer la netteté
+
+
+class ImgSharpFrame(ImgFrame):
+
+    def __init__(self,master=None,**kwargs):
+        ImgFrame.__init__(self,master,kwargs)
+        self.method=StringVar(value="Netteté")
+        self.Proceed_Choice=Button(self, text="Procéder", command=self.Proceed)
+        self.Sharpen_Choice=Radiobutton(self, text="Améliorer la netteté", variable=self.method, value="Netteté")
+        self.Pike_Choice=Radiobutton(self,text="Améliorer le piqué",variable=self.method, value="Piqué")
+
+        self.Proceed_Choice.grid(row=0, column=3, rowspan=2)
+        self.Sharpen_Choice.grid(row=0, column=4, columnspan=2)
+        self.Pike_Choice.grid(row=1, column=4, columnspan=2)
+
+    def Proceed(self,event=None):
+        if isinstance(self.mask_array, np.ndarray):
+            if self.method.get() == "Netteté":
+                if len(self.mask_array.shape)==3:
+                    self.fused_array = gpu.Sharpen3D(self.mask_array)
+                else:
+                    self.fused_array = gpu.Sharpen(self.mask_array)
+
+            elif self.method.get() == "Piqué":
+                if len(self.mask_array.shape)==3:
+                    self.fused_array = gpu.Blur_Mask3D(self.mask_array)
+                else:
+                    self.fused_array = gpu.Blur_Mask(self.mask_array)
+
+            ImgFrame.Fused_Draw(self)
+            self.Fused_Register.grid(row=7, column=3, columnspan=3)
 
 # Pixelliser une image
 
@@ -571,9 +603,9 @@ class ImgPixFrame(ImgFrame):
     def __init__(self, master=None, **kwargs):
         ImgFrame.__init__(self, master, kwargs)
 
-        self.pixel_xrate = IntVar()
+        self.pixel_xrate = DoubleVar()
         self.pixel_xrate.set(2)
-        self.pixel_yrate = IntVar()
+        self.pixel_yrate = DoubleVar()
         self.pixel_yrate.set(2)
         self.Pixel_Choice = Button(self, text="Pixelliser", command=self.Pixellize)
         self.Rate_xChoice = Entry(self, textvariable=self.pixel_xrate, width=4)
