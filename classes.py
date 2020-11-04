@@ -1396,7 +1396,7 @@ class ZeroFrame(Frame):
 class TabVar(object):
 
     def __init__(self, *args):
-
+        object.__init__(self)
         self.values = list(args)
 
     def __getitem__(self, key):
