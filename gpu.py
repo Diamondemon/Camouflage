@@ -546,7 +546,7 @@ def pxlzc(img,xrate,yrate):
         s=p//yrate+1
     else:
         s=p//yrate
-        
+
     pxld=np.zeros((r,s,q),dtype=np.uint8)
     
 

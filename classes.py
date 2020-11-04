@@ -620,17 +620,18 @@ class ImgPixFrame(ImgFrame):
     def Pixellize(self, event=None):
 
         if isinstance(self.mask_array, np.ndarray):
-            xrate = self.pixel_xrate.get()
-            yrate = self.pixel_yrate.get()
+            xrate = int(self.pixel_xrate.get())
+            yrate = int(self.pixel_yrate.get())
             temp_array = self.mask_array.copy()
 
-            if len(temp_array.shape) == 3:
-                self.fused_array = gpu.pxlzc(temp_array, xrate, yrate)
-            else:
-                self.fused_array = gpu.pxlzg(temp_array, xrate, yrate)
+            if xrate != 0 and yrate != 0:
+                if len(temp_array.shape) == 3:
+                    self.fused_array = gpu.pxlzc(temp_array, xrate, yrate)
+                else:
+                    self.fused_array = gpu.pxlzg(temp_array, xrate, yrate)
 
-            ImgFrame.Fused_Draw(self)
-            self.Fused_Register.grid(row=7, column=3, columnspan=3)
+                ImgFrame.Fused_Draw(self)
+                self.Fused_Register.grid(row=7, column=3, columnspan=3)
 
 # Faire le négatif
 
