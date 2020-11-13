@@ -28,6 +28,7 @@ class CamoWindow(Tk):
         self.IMP=classes.ImgPixFrame(self)
         self.IMN=classes.ImgNegFrame(self)
         self.IMC=classes.ImgCropFrame(self)
+        self.IMCv=classes.ImgConvFrame(self)
         self.ThSim=classes.SimuTherm(self)
         self.ThSup=classes.SuperThSim(self)
         self.GF=classes.GaussFrame(self)
@@ -58,6 +59,8 @@ class CamoWindow(Tk):
         self.imgmenu.add_command(label="Faire le négatif",command=self.Neg_Img)
         self.imgmenu.add_separator()
         self.imgmenu.add_command(label="Rogner une image",command=self.Crop_Img)
+        self.imgmenu.add_separator()
+        self.imgmenu.add_command(label="Convertir une image",command=self.Conv_Img)
         
         self.jajamenu=Menu(self.menubar)
         self.jajamenu.add_command(label="Simuler la chaleur",command=self.Simulate_Therm)
@@ -143,6 +146,12 @@ class CamoWindow(Tk):
         for wid in self.grid_slaves():
             wid.grid_forget()
         self.IMC.grid(row=0,column=0)
+
+    def Conv_Img(self,event=None):
+
+        for wid in self.grid_slaves():
+            wid.grid_forget()
+        self.IMCv.grid(row=0,column=0)
 
     def Simulate_Therm(self,event=None):
         

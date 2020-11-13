@@ -70,6 +70,7 @@ class ImgFrame(Frame):
         self.mask_array = None
         self.displayed_fused = None
         self.fused_array = None
+        self.fused_pilImage = None
         self.Mask_Choice = Button(self, text="Choisir une image", command=self.Mask_Chose)
         self.Fused_Register = Button(self, text="Sauvegarder", command=self.Register)
         self.Mask_Choice.grid(row=0, column=0, rowspan=2)
@@ -82,14 +83,17 @@ class ImgFrame(Frame):
 
     def Mask_Chose(self, event=None):
         filename = askopenfilename(title="Choisissez votre image",
-                                   filetypes=[("Toute image", (".bmp", ".png", ".jpg", ".ico", ".jpeg", ".raw")),
+                                   filetypes=[("Toute image", (".bmp", ".png", ".jpg", ".ico", ".jpeg", ".raw",".gif")),
                                               ("Images Bitmap", ".bmp"), ("Images Jpeg", (".jpg", ".jpeg")),
-                                              ("Images PNG", ".png"), ("Icônes", ".ico"), ("Images RAW", ".raw")],
+                                              ("Images PNG", ".png"), ("Images GIF",".gif"), ("Icônes", ".ico"), ("Images RAW", ".raw")],
                                    defaultextension=[".bmp", ".jpg", ".png"])
 
         if filename != "":
             self.Mask_Display.delete("mask")
             pilImage = PIL.Image.open(filename)
+            if pilImage.format=="GIF":
+                pilImage=pilImage.convert("RGBA")
+            #print(pilImage)
 
             mask_temp = np.asarray(pilImage)
             self.mask_array = mask_temp.copy()
@@ -116,10 +120,10 @@ class ImgFrame(Frame):
     def Fused_Draw(self, event=None):
 
         self.Fused_Display.delete("fused")
-        pilImage = PIL.Image.fromarray(self.fused_array)
+        self.fused_pilImage = PIL.Image.fromarray(self.fused_array)
 
-        height_ref = pilImage.height
-        width_ref = pilImage.width
+        height_ref = self.fused_pilImage.height
+        width_ref = self.fused_pilImage.width
 
         if height_ref > 360 or width_ref > 360:
             if height_ref > width_ref:
@@ -130,9 +134,10 @@ class ImgFrame(Frame):
                 scale_ratio = 360 / width_ref
                 new_height = int(scale_ratio * height_ref)
                 new_width = 360
-            pilImage = pilImage.resize((new_width, new_height))
-
-        self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
+            pilImage = self.fused_pilImage.resize((new_width, new_height))
+            self.displayed_fused = PIL.ImageTk.PhotoImage(pilImage)
+        else:
+            self.displayed_fused = PIL.ImageTk.PhotoImage(self.fused_pilImage)
 
         self.Fused_Display.create_image(182, 182, image=self.displayed_fused, tag="fused")
 
@@ -149,21 +154,29 @@ class ImgFrame(Frame):
     def Register(self, event=None):
 
         filename = asksaveasfilename(title="Enregistrer l'image",
-                                     filetypes=[("Toute image", (".bmp", ".png", ".jpg", ".ico", ".jpeg", ".raw")),
+                                     filetypes=[("Toute image", (".bmp", ".png", ".jpg", ".ico", ".jpeg", ".raw",".gif")),
                                                 ("Images Bitmap", ".bmp"), ("Images Jpeg", (".jpg", ".jpeg")),
-                                                ("Images PNG", ".png"), ("Icônes", ".ico"), ("Images RAW", ".raw")],
+                                                ("Images PNG", ".png"), ("Images GIF",".gif"), ("Icônes", ".ico"), ("Images RAW", ".raw")],
                                      defaultextension=[".bmp", ".jpg", ".png"], initialfile=["Image"])
         if filename != "":
-            if not (self.fused_array.shape[2]>3 and (filename[-4:]==".jpg" or filename[-5:]==".jpeg")):
-                imsave(filename, self.fused_array)
+            if len(self.fused_array.shape)==3:
+                if not (self.fused_array.shape[2]>3 and (filename[-4:]==".jpg" or filename[-5:]==".jpeg")):
+                    """if filename[-4:] == ".ico":
+                        icon_sizes=[(32, 32)]#, (48, 48), (64, 64), (128, 128), (255, 255)]
+                        self.fused_pilImage.save(filename,sizes=icon_sizes)"""
+                    self.fused_pilImage.save(filename)
+
+                else:
+                    raise TypeError("Le format JPG ne sait pas gérer la transparence.")
 
             else:
-                raise TypeError("Le format JPG ne sait pas gérer la transparence.")
+                self.fused_pilImage.save(filename)
 
     def grid_forget(self, event=None):
         Frame.grid_forget(self)
         self.mask_array = None
         self.fused_array = None
+        self.fused_pilImage = None
         self.displayed_img = None
         self.displayed_fused = None
         self.Mask_Display.delete("mask")
@@ -703,6 +716,20 @@ class ImgCropFrame(ImgFrame):
         if ImgFrame.Mask_Chose(self, event):
             self.newheight.set(self.mask_array.shape[0])
             self.newwidth.set(self.mask_array.shape[1])
+
+
+class ImgConvFrame(ImgFrame):
+
+    def __init__(self,master=None,**kwargs):
+        ImgFrame.__init__(self,master,kwargs)
+        self.Fused_Register.grid(row=7,column=0,columnspan=1)
+
+    def Mask_Chose(self, event=None):
+        ImgFrame.Mask_Chose(self)
+        self.fused_array = self.mask_array.copy()
+        self.Fused_Draw(self)
+
+
 
 # Simulation Thermique
 
